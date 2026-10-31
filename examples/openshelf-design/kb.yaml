@@ -1,0 +1,16 @@
+openshelf: "0.1"
+id: openshelf-design
+title: OpenShelf design notes
+description: >
+  Why OpenShelf is shaped the way it is: the LLM Wiki pattern it builds on,
+  progressive context, and the design decisions behind the spec.
+layout:
+  pages: kb
+  index: kb/README.md
+  schema: CLAUDE.md
+  log: kb/CHANGELOG.md
+types:
+  decision: A choice that was made, with the alternatives considered and the reasoning.
+license: CC-BY-4.0
+maintainers: [hexsecs]
+tags: [openshelf, llm, knowledge-base]

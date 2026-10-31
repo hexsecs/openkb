@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hexsecs/openshelf/schemas/kb.schema.json",
+  "title": "OpenShelf manifest (kb.yaml)",
+  "type": "object",
+  "required": ["openshelf", "id", "title", "description"],
+  "properties": {
+    "openshelf": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "pages": { "$ref": "#/$defs/relpath", "default": "wiki" },
+        "index": { "$ref": "#/$defs/relpath", "default": "index.md" },
+        "sources": { "$ref": "#/$defs/relpath", "default": "raw" },
+        "schema": { "$ref": "#/$defs/relpath", "default": "AGENTS.md" },
+        "log": { "$ref": "#/$defs/relpath", "default": "log.md" }
+      },
+      "additionalProperties": false
+    },
+    "types": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "profile": { "type": "string", "default": "wiki" },
+    "version": { "type": "string" },
+    "license": { "type": "string" },
+    "maintainers": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "depends": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "relpath": {
+      "type": "string",
+      "minLength": 1,
+      "not": { "pattern": "(^/|(^|/)\\.\\.(/|$))" }
+    }
+  }
+}

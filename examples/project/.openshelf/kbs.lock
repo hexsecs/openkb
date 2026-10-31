@@ -1,0 +1,6 @@
+openshelf: '0.1'
+kbs:
+  awesome-can-bus:
+    source: ../awesome-can-bus
+  openshelf-design:
+    source: ../openshelf-design

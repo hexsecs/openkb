@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hexsecs/openshelf/schemas/page.schema.json",
+  "title": "OpenShelf page frontmatter",
+  "description": "A page's id is its path under layout.pages without .md, so it is not a frontmatter field. Profile rules (such as awesome entities needing url and category) depend on kb.yaml and are checked by lint, not by this schema.",
+  "type": "object",
+  "oneOf": [
+    { "required": ["title", "summary"], "not": { "required": ["redirect"] } },
+    { "required": ["redirect"] }
+  ],
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "type": { "type": "string", "minLength": 1 },
+    "updated": { "type": "string", "format": "date" },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string" },
+          "path": { "type": "string" },
+          "retrieved": { "type": "string", "format": "date" }
+        },
+        "anyOf": [{ "required": ["url"] }, { "required": ["path"] }]
+      }
+    },
+    "redirect": { "type": "string", "minLength": 1 },
+    "url": { "type": "string" },
+    "category": { "type": "string" },
+    "license": { "type": "string" },
+    "status": { "enum": ["active", "maintenance", "archived", "unknown"] },
+    "last_checked": { "type": "string", "format": "date" }
+  },
+  "additionalProperties": true
+}

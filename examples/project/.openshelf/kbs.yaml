@@ -1,0 +1,8 @@
+openshelf: "0.1"
+kbs:
+  - id: awesome-can-bus
+    source: ../awesome-can-bus
+    use: when the task involves CAN tooling or decoding CAN traffic
+  - id: openshelf-design
+    source: ../openshelf-design
+    use: when changing or explaining the OpenShelf format
