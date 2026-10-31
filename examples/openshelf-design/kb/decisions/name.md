@@ -10,7 +10,7 @@ sources:
 updated: 2026-10-31
 ---
 
-**Context.** The project started as OpenKB. VectifyAI's OpenKB, an LLM-maintained wiki tool built on the same [[llm-wiki]] pattern, already used that name, owned `openkb` on PyPI, and had a few thousand GitHub stars. Sharing the name would have meant confusion and no package name.
+**Context.** The project started as OpenKB. VectifyAI's OpenKB, an LLM-maintained wiki tool built on the same [[llm-wiki]], already used that name, owned `openkb` on PyPI, and had a few thousand GitHub stars. Sharing the name would have meant confusion and no package name.
 
 **Options considered.** Keep OpenKB and publish as `openkb-cli`; library words such as tome, sheaf and carrel (all taken by tools in this space); kbshelf; kbdock; OpenShelf.
 

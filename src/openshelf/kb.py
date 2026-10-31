@@ -45,7 +45,7 @@ class Page:
 class Link:
     raw: str  # the link as written
     kind: str  # page | subindex | file | external | kb | missing | ambiguous
-    target: str | None = None  # page id, sub-index path, or "<kb-id>/<page-id>"
+    target: str | None = None  # page id, sub-index or file path, or "<kb-id>/<page-id>"
 
 
 def split_frontmatter(text: str) -> tuple[dict | None, str]:
@@ -178,14 +178,14 @@ class KB:
                     return Link(raw, "page", page.id)
             if t in self.subindexes:
                 return Link(raw, "subindex", str(t))
-            return Link(raw, "file") if t.exists() else Link(raw, "missing")
+            return Link(raw, "file", str(t)) if t.exists() else Link(raw, "missing")
 
         name = target[:-3] if target.endswith(".md") else target
         if not name:
             return Link(raw, "missing")
         if Path(name).suffix:  # an attachment such as ![[diagram.png]]
-            hits = [p for p in self.root.rglob(Path(name).name) if p.is_file()]
-            return Link(raw, "file") if hits else Link(raw, "missing")
+            hits = sorted(p for p in self.root.rglob(Path(name).name) if p.is_file())
+            return Link(raw, "file", str(hits[0].resolve())) if hits else Link(raw, "missing")
         if name in self.pages:
             return Link(raw, "page", name)
         hits = [pid for pid in self.pages if pid.rsplit("/", 1)[-1] == name]

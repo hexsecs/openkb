@@ -62,7 +62,8 @@ version: 2026.10.31           # OPTIONAL
 license: CC-BY-4.0            # SHOULD    SPDX id for the content; CC-BY-4.0 recommended
 maintainers: [hexsecs]        # SHOULD
 tags: [can, automotive]       # OPTIONAL
-depends: []                   # OPTIONAL  ids of KBs this one links into
+site: https://example.org/kb  # OPTIONAL  where this KB's rendered site is published (§10)
+depends: []                   # OPTIONAL  KBs this one links into: ids, or {id, site}
 ```
 
 If `license` is absent, consumers MUST NOT assume one. `openshelf init` uses
@@ -154,7 +155,10 @@ Inside a KB, pages MAY use either style; consumers MUST resolve both:
   and lint SHOULD flag it.
 
 Links **to another KB** use `kb://<kb-id>/<page-id>`. Consumers resolve them
-only when that KB is connected, and otherwise show the link text.
+only when that KB is connected, and otherwise show the link text. A KB that
+links into another one SHOULD list it in `depends`. An entry there MAY be an
+object, `{id: other-kb, site: https://…}`, giving the other KB's published
+site, so that a rendered site can link to it (§10).
 
 A moved page MAY leave a stub at its old path with `redirect: <new-id>` in its
 frontmatter and no body. Consumers MUST follow it.
@@ -333,7 +337,31 @@ it still reads as a classic awesome list. What this adds over a flat list:
 - `lint` rechecks `url`, `status` and `last_checked`, and flags dead or
   archived entries.
 
-## 10. Versioning
+## 10. Publishing
+
+A KB can be rendered as a static website, for example on GitHub Pages or
+GitLab Pages. Tools that publish a KB SHOULD use this layout, so that people
+and agents can read any published KB the same way:
+
+| Path | Contents |
+|------|----------|
+| `index.html`, `index.md` | the index, rendered and as Markdown |
+| `<page-id>/index.html` | each page, so page ids double as stable URLs |
+| `<page-id>/index.md` | each page's Markdown source, including frontmatter |
+| `catalog.json` | `{openshelf, kb: {id, title, description, …}, pages: [{id, title, summary, type, updated, url, markdown}]}` |
+| `llms.txt` | the [llms.txt](https://llmstxt.org/) convention: title, description (L0) and a link to every page's Markdown |
+
+- Links between pages are relative, so the site works under any base path.
+- Redirect stubs become HTML redirects to the new page.
+- `kb://` links point to `<site>/<page-id>/` when the other KB's `site` is known
+  from `depends`; otherwise they are shown as text.
+- Raw sources are not published unless the maintainer opts in, because they
+  are often not redistributable.
+
+`openshelf build` produces this layout, and `openshelf pages github|gitlab`
+writes a CI workflow that lints, builds and deploys it on every push.
+
+## 11. Versioning
 
 This spec uses `openshelf: "<major>.<minor>"`. Before 1.0, minor versions may
 break compatibility.
