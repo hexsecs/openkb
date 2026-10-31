@@ -2,7 +2,7 @@
 id: cantools
 title: cantools
 summary: Python package to parse CAN databases (such as DBC files) and encode or decode messages and signals.
-kind: entry
+type: entity
 category: Libraries
 url: https://pypi.org/project/cantools/
 status: active

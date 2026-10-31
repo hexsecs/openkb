@@ -2,7 +2,7 @@
 id: python-can
 title: python-can
 summary: Python library for sending and receiving CAN messages across many interfaces, including SocketCAN.
-kind: entry
+type: entity
 category: Libraries
 url: https://pypi.org/project/python-can/
 status: active

@@ -3,37 +3,107 @@
   "$id": "https://github.com/hexsecs/openkb/schemas/page.schema.json",
   "title": "OpenKB page frontmatter",
   "type": "object",
-  "required": ["id", "title", "summary", "updated"],
+  "required": [
+    "id",
+    "title",
+    "type",
+    "summary",
+    "updated"
+  ],
   "properties": {
-    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
-    "title": { "type": "string", "minLength": 1 },
-    "summary": { "type": "string", "minLength": 1, "maxLength": 160 },
-    "tags": { "type": "array", "items": { "type": "string" } },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "enum": [
+        "overview",
+        "source",
+        "entity",
+        "concept",
+        "comparison",
+        "synthesis",
+        "answer"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "related": {
       "type": "array",
-      "items": { "type": "string", "pattern": "^([a-z0-9-]+:)?[a-z0-9-]+$" }
+      "items": {
+        "type": "string",
+        "pattern": "^([a-z0-9-]+:)?[a-z0-9-]+$"
+      }
     },
     "sources": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "url": { "type": "string" },
-          "path": { "type": "string" },
-          "retrieved": { "type": "string", "format": "date" }
+          "url": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "retrieved": {
+            "type": "string",
+            "format": "date"
+          }
         },
-        "anyOf": [{ "required": ["url"] }, { "required": ["path"] }]
+        "anyOf": [
+          {
+            "required": [
+              "url"
+            ]
+          },
+          {
+            "required": [
+              "path"
+            ]
+          }
+        ]
       }
     },
-    "updated": { "type": "string", "format": "date" },
-    "kind": { "enum": ["entry", "topic"] },
-    "url": { "type": "string" },
-    "category": { "type": "string" },
-    "license": { "type": "string" },
-    "status": { "enum": ["active", "maintenance", "archived", "unknown"] },
-    "last_checked": { "type": "string", "format": "date" }
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "maintenance",
+        "archived",
+        "unknown"
+      ]
+    },
+    "last_checked": {
+      "type": "string",
+      "format": "date"
+    }
   },
-  "if": { "properties": { "kind": { "const": "entry" } }, "required": ["kind"] },
-  "then": { "required": ["url", "category"] },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "description": "Awesome-profile entities must also have url and category; that rule depends on kb.yaml and is checked by lint, not by this schema."
 }

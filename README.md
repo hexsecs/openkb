@@ -1,9 +1,11 @@
 # OpenKB
 
-An open standard for **LLM-maintained knowledge bases** ("LLM wikis") that projects can connect and load in stages.
+An open standard for the **LLM Wiki** pattern described by [Andrej Karpathy](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f): an LLM builds and maintains a persistent, interlinked Markdown wiki from your raw sources, so knowledge is compiled once and kept current instead of re-derived on every query.
 
-- **One format.** Every KB has a manifest (`kb.yaml`), an index (`index.md`) and wiki pages with frontmatter, so any agent or tool can read any KB.
-- **Progressive context.** Each KB offers four tiers: a one-line description (L0), an index (L1), pages (L2) and raw sources (L3). Agents load only as deep as the task needs, so a project can connect many KBs cheaply.
+The gist leaves the layout, page formats and tooling to each user. OpenKB fixes them so that LLM wikis are interchangeable:
+
+- **One format.** Raw sources in `raw/`, LLM-maintained pages in `wiki/`, the schema in `AGENTS.md`, plus `index.md`, `log.md` and a small `kb.yaml` manifest. Pages have typed frontmatter (`entity`, `concept`, `comparison`, `synthesis`...), compatible with Obsidian.
+- **Progressive context.** Each KB offers four tiers: a one-line description (L0), the index (L1), pages (L2) and raw sources (L3). Agents load only as deep as the task needs, so a project can connect many KBs cheaply.
 - **Connect many KBs to a project.** List them in `.openkb/kbs.yaml`; tooling turns that into a short `context.md` the project's agent always sees.
 - **Awesome lists, upgraded.** The `awesome` profile makes each list entry a sourced, cross-linked page that an LLM keeps current, while `index.md` still reads as a classic awesome list.
 
