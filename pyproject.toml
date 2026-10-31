@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openkb"
+dynamic = ["version"]
+description = "Tools for OpenKB: connectable, LLM-maintained knowledge bases"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6", "jsonschema>=4.18"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+openkb = "openkb.cli:main"
+
+[tool.hatch.version]
+path = "src/openkb/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openkb"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"schemas" = "openkb/schemas"

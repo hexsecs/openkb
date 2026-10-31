@@ -59,11 +59,14 @@ layout:                       # OPTIONAL  where things are; defaults shown
 types: {}                     # OPTIONAL  custom page types, see §4.3
 profile: wiki                 # OPTIONAL  see §9
 version: 2026.10.31           # OPTIONAL
-license: CC-BY-4.0            # SHOULD    SPDX id for the content
+license: CC-BY-4.0            # SHOULD    SPDX id for the content; CC-BY-4.0 recommended
 maintainers: [hexsecs]        # SHOULD
 tags: [can, automotive]       # OPTIONAL
 depends: []                   # OPTIONAL  ids of KBs this one links into
 ```
+
+If `license` is absent, consumers MUST NOT assume one. `openkb init` uses
+CC-BY-4.0 unless told otherwise.
 
 All `layout` paths are relative to the KB root and MUST NOT point outside it.
 Consumers MUST use the declared paths and the defaults above for any that
@@ -93,7 +96,8 @@ A **page** is any `.md` file under `layout.pages`, except:
 
 - the files declared as `layout.index`, `layout.schema` and `layout.log`,
   and anything under `layout.sources`;
-- sub-indexes linked from the index that have no frontmatter;
+- sub-indexes: files with no frontmatter that are linked from the index (or
+  from another sub-index) and that themselves contain links;
 - files and directories whose name starts with `_` or `.`. Directories inside
 `layout.pages` are free-form: organize by type, topic, date or not at all.
 

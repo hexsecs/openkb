@@ -1,0 +1,6 @@
+openkb: '0.1'
+kbs:
+  awesome-can-bus:
+    source: ../awesome-can-bus
+  openkb-design:
+    source: ../openkb-design

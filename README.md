@@ -14,10 +14,28 @@ The gist leaves layout, page formats and tooling open, and OpenKB keeps it that 
 
 - [`SPEC.md`](SPEC.md): the v0.1 draft spec
 - [`schemas/`](schemas/): JSON Schemas for `kb.yaml`, page frontmatter and `.openkb/kbs.yaml`
+- [`src/openkb/`](src/openkb/): the `openkb` command-line tool
 - [`examples/awesome-can-bus/`](examples/awesome-can-bus/): a small awesome-profile KB using the default layout
 - [`examples/openkb-design/`](examples/openkb-design/): a KB with its own layout (nested folders, wikilinks, a custom page type)
 - [`examples/project/`](examples/project/): a project that connects both
 
+## Tooling
+
+The `openkb` command (Python 3.10+) works with any KB that meets the spec:
+
+```sh
+pip install git+https://github.com/hexsecs/openkb
+
+openkb init my-kb --description "One line saying what this KB covers."   # new KB, default layout, CC-BY-4.0
+openkb lint my-kb                                    # check it against the spec
+
+cd my-project
+openkb add github:someone/some-kb --use "when the task involves X"        # connect a KB
+openkb sync                                          # fetch KBs, write .openkb/kbs.lock and .openkb/context.md
+```
+
+Point your project's `AGENTS.md` or `CLAUDE.md` at `.openkb/context.md`. `openkb sync --locked` reproduces the exact commits in the lock file.
+
 ## Status
 
-Draft. Planned next: a CLI (`openkb add | sync | index | lint`) and an MCP server that exposes connected KBs tier by tier.
+Draft. Planned next: an MCP server that exposes connected KBs tier by tier, and `openkb index` to generate an index from frontmatter.
