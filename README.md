@@ -39,3 +39,10 @@ Point your project's `AGENTS.md` or `CLAUDE.md` at `.openkb/context.md`. `openkb
 ## Status
 
 Draft. Planned next: an MCP server that exposes connected KBs tier by tier, and `openkb index` to generate an index from frontmatter.
+
+## License
+
+- **Code** (`src/`, `tests/`, `schemas/`, CI): [MIT](LICENSE).
+- **Specification and examples** (`SPEC.md`, `examples/`): [CC-BY-4.0](LICENSE-SPEC).
+
+Knowledge bases you create are yours to license. `openkb init` defaults to CC-BY-4.0, which you can change with `--license`.

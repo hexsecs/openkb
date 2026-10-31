@@ -7,6 +7,8 @@ name = "openkb"
 dynamic = ["version"]
 description = "Tools for OpenKB: connectable, LLM-maintained knowledge bases"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = ["pyyaml>=6", "jsonschema>=4.18"]
 
