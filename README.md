@@ -59,6 +59,25 @@ claude mcp add --scope project openshelf -- openshelf mcp
 
 Other clients take the same command, `openshelf mcp`, run from the project directory (or pass `--project <dir>`).
 
+### Publishing a site
+
+`openshelf build` renders any KB as a static website, whatever its layout, and `openshelf pages` sets up hosting:
+
+```sh
+pip install "openshelf[site] @ git+https://github.com/hexsecs/openshelf"
+
+openshelf build my-kb --out _site     # preview: python -m http.server -d _site
+openshelf pages github --kb my-kb     # writes .github/workflows/openshelf-pages.yml
+openshelf pages gitlab --kb my-kb     # writes .gitlab-ci.yml
+```
+
+- Each page is published at `<page-id>/`, so page ids double as stable URLs, and all links are relative, so the site works under any base path.
+- Wikilinks, Markdown links, sub-indexes and redirects all become working links. `kb://` links go to the other KB's site when `depends` gives its `site`, and are shown as text otherwise.
+- Pages show their frontmatter: type, dates and sources, plus link, category, license and a status badge for awesome-list entries. Built-in search covers titles and summaries.
+- For agents, each page's Markdown is published next to its HTML, along with `catalog.json` and an [`llms.txt`](https://llmstxt.org/).
+- Raw sources aren't published unless you pass `--include-sources`, because they often can't be redistributed. Raw HTML in pages is escaped.
+- The CI workflows lint the KB before building, so a broken KB is never published. On GitHub, set Settings → Pages → Source to "GitHub Actions" once.
+
 ## Status
 
 Draft. See the [roadmap](https://github.com/hexsecs/openshelf/issues/2) for what's next.

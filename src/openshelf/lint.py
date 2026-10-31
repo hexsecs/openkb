@@ -77,7 +77,7 @@ def lint(root: str | Path) -> list[Issue]:
         return issues
 
     declared = m.get("types") if isinstance(m.get("types"), dict) else {}
-    depends = set(m.get("depends") or [])
+    depends = {d.get("id") if isinstance(d, dict) else d for d in m.get("depends") or []}
     rel = lambda p: p.relative_to(kb.root).as_posix()  # noqa: E731
 
     def check_links(path: Path, text: str) -> list:

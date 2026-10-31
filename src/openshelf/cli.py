@@ -50,6 +50,34 @@ def _sync(args: argparse.Namespace) -> int:
     return 0
 
 
+def _build(args: argparse.Namespace) -> int:
+    try:
+        from .site import BuildError, build
+    except ImportError:
+        print("openshelf: building a site needs the 'site' extra: pip install 'openshelf[site]'", file=sys.stderr)
+        return 1
+    try:
+        stats = build(args.path, args.out, force=args.force, include_sources=args.include_sources)
+    except BuildError as e:
+        print(f"openshelf: {e}", file=sys.stderr)
+        return 1
+    print(f"Built {stats['pages']} pages into {args.out}")
+    return 0
+
+
+def _pages(args: argparse.Namespace) -> int:
+    from .hosting import DEFAULT_INSTALL, write_pages_config
+
+    dest = write_pages_config(args.host, args.repo, kb=args.kb, branch=args.branch,
+                              install=args.install or DEFAULT_INSTALL, force=args.force)
+    print(f"Wrote {dest}")
+    if args.host == "github":
+        print("Enable it once: Settings → Pages → Build and deployment → Source: GitHub Actions.")
+    else:
+        print("GitLab publishes the site from the 'pages' job on the next push to that branch.")
+    return 0
+
+
 def _mcp(args: argparse.Namespace) -> int:
     try:
         from .server import build_server
@@ -93,6 +121,22 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--locked", action="store_true", help="check out the commits in .openshelf/kbs.lock")
     p.add_argument("--project", default=".")
     p.set_defaults(func=_sync)
+
+    p = sub.add_parser("build", help="render a KB as a static website")
+    p.add_argument("path", nargs="?", default=".", help="the KB (default: .)")
+    p.add_argument("--out", default="_site", help="output directory (default: _site)")
+    p.add_argument("--force", action="store_true", help="replace a non-empty output directory not created by build")
+    p.add_argument("--include-sources", action="store_true", help="also publish files under the KB's sources directory")
+    p.set_defaults(func=_build)
+
+    p = sub.add_parser("pages", help="write a CI workflow that publishes the KB's site")
+    p.add_argument("host", choices=["github", "gitlab"])
+    p.add_argument("--kb", default=".", help="path of the KB inside the repository (default: .)")
+    p.add_argument("--repo", default=".", help="repository root to write the CI file into (default: .)")
+    p.add_argument("--branch", default="main", help="branch that publishes (default: main)")
+    p.add_argument("--install", help="pip requirement for openshelf (default: the GitHub repository)")
+    p.add_argument("--force", action="store_true", help="overwrite an existing CI file")
+    p.set_defaults(func=_pages)
 
     p = sub.add_parser("mcp", help="run an MCP server (stdio) exposing the connected KBs")
     p.add_argument("--project", default=".")

@@ -3,35 +3,116 @@
   "$id": "https://github.com/hexsecs/openshelf/schemas/kb.schema.json",
   "title": "OpenShelf manifest (kb.yaml)",
   "type": "object",
-  "required": ["openshelf", "id", "title", "description"],
+  "required": [
+    "openshelf",
+    "id",
+    "title",
+    "description"
+  ],
   "properties": {
-    "openshelf": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
-    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
-    "title": { "type": "string", "minLength": 1 },
-    "description": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "openshelf": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "site": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://",
+      "description": "Where this KB's rendered site is published."
+    },
     "layout": {
       "type": "object",
       "properties": {
-        "pages": { "$ref": "#/$defs/relpath", "default": "wiki" },
-        "index": { "$ref": "#/$defs/relpath", "default": "index.md" },
-        "sources": { "$ref": "#/$defs/relpath", "default": "raw" },
-        "schema": { "$ref": "#/$defs/relpath", "default": "AGENTS.md" },
-        "log": { "$ref": "#/$defs/relpath", "default": "log.md" }
+        "pages": {
+          "$ref": "#/$defs/relpath",
+          "default": "wiki"
+        },
+        "index": {
+          "$ref": "#/$defs/relpath",
+          "default": "index.md"
+        },
+        "sources": {
+          "$ref": "#/$defs/relpath",
+          "default": "raw"
+        },
+        "schema": {
+          "$ref": "#/$defs/relpath",
+          "default": "AGENTS.md"
+        },
+        "log": {
+          "$ref": "#/$defs/relpath",
+          "default": "log.md"
+        }
       },
       "additionalProperties": false
     },
     "types": {
       "type": "object",
-      "additionalProperties": { "type": "string" }
+      "additionalProperties": {
+        "type": "string"
+      }
     },
-    "profile": { "type": "string", "default": "wiki" },
-    "version": { "type": "string" },
-    "license": { "type": "string" },
-    "maintainers": { "type": "array", "items": { "type": "string" } },
-    "tags": { "type": "array", "items": { "type": "string" } },
+    "profile": {
+      "type": "string",
+      "default": "wiki"
+    },
+    "version": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "maintainers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "depends": {
       "type": "array",
-      "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/kbid"
+          },
+          {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/kbid"
+              },
+              "site": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https?://"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
     }
   },
   "additionalProperties": true,
@@ -39,7 +120,13 @@
     "relpath": {
       "type": "string",
       "minLength": 1,
-      "not": { "pattern": "(^/|(^|/)\\.\\.(/|$))" }
+      "not": {
+        "pattern": "(^/|(^|/)\\.\\.(/|$))"
+      }
+    },
+    "kbid": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
     }
   }
 }
