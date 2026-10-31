@@ -6,222 +6,172 @@ In that pattern, an LLM incrementally builds and maintains a persistent,
 interlinked set of Markdown pages between you and your raw sources, instead of
 re-deriving everything from the sources at query time.
 
-The gist is deliberately abstract and leaves layout, page formats and tooling
-to each user. OpenKB fixes those choices so that wikis are interchangeable:
+The gist is deliberately abstract, and people organize their wikis in very
+different ways. OpenKB keeps that freedom. It standardizes only what another
+tool or project needs in order to **connect** to a KB:
 
-1. **Composability.** Any project can connect several KBs and an agent can use
-   them together without loading all of them.
-2. **Progressive context.** Every KB offers the same tiers of detail, so an agent
-   loads the least it needs and goes deeper only when a task calls for it.
-3. **Profiles.** Shared conventions for common kinds of wiki, starting with
-   `awesome`, which replaces hand-maintained awesome lists.
+- **The contract (§2–§6)** is small and strict. It says where things are, how
+  pages are identified and summarized, and how links work. Every conforming KB
+  meets it, so any number of KBs can be connected to one project.
+- **The conventions (§7–§9)** are recommendations: a default layout, page
+  types, operations and profiles. Follow them, change them or ignore them; a
+  KB stays compatible as long as it meets the contract.
 
-The key words MUST, SHOULD and MAY are used as in RFC 2119.
+The key words MUST, SHOULD and MAY are used as in RFC 2119. They apply only
+in the contract sections; the convention sections are non-normative unless a
+KB opts into a profile (§9).
 
 ---
 
-## 1. The three layers
+## 1. Design principles
 
-OpenKB keeps the gist's three layers and gives each a fixed location:
+1. **Declare, don't dictate.** A KB says in its manifest where its pages,
+   index and sources are. Consumers read the manifest instead of assuming a
+   layout.
+2. **Progressive context.** Every KB offers the same tiers of detail (§3), so
+   an agent connected to many KBs loads only as much as a task needs.
+3. **Plain files.** Markdown with YAML frontmatter in a directory, usually a
+   git repository. Readable without tools, and works in Obsidian.
 
-| Layer       | Location                   | Owner                         | Rule                                       |
-|-------------|----------------------------|-------------------------------|--------------------------------------------|
-| Raw sources | `raw/`                     | human curates                 | Immutable: the LLM reads but never modifies |
-| Wiki        | `wiki/`, `index.md`, `log.md` | LLM writes, human reads    | Kept consistent with sources on every pass |
-| Schema      | `AGENTS.md` (or `CLAUDE.md`) | human and LLM, co-evolved   | Defines conventions and workflows for this KB |
+---
 
-OpenKB adds a fourth file, the manifest `kb.yaml`, so that tools and other
-projects can identify and connect the KB without reading it.
+# Part I — Compatibility contract
 
-## 2. Layout
+## 2. Manifest — `kb.yaml`
 
-```
-my-kb/
-├── kb.yaml          # REQUIRED  manifest (L0)
-├── AGENTS.md        # REQUIRED  schema: conventions and workflows for the maintainer LLM
-├── index.md         # REQUIRED  catalog of pages (L1)
-├── log.md           # REQUIRED  append-only record of ingests, queries and lint passes
-├── wiki/            # REQUIRED  LLM-maintained pages (L2)
-│   ├── overview.md  # SHOULD    top-level overview / synthesis of the whole KB
-│   └── ...
-└── raw/             # OPTIONAL  immutable source documents (L3)
-    └── assets/      # OPTIONAL  downloaded images and attachments
-```
-
-A KB SHOULD be a git repository. `CLAUDE.md` MAY be used instead of, or as a
-pointer to, `AGENTS.md`. Other files (README, LICENSE, CI, `.obsidian/`) are
-allowed and ignored by consumers.
-
-Sources MAY live outside the KB (for example as URLs) when they can't be
-redistributed; pages then cite them by URL instead of by `raw/` path.
-
-## 3. Context tiers
-
-| Tier | Source                    | Budget (guide)          | When it is loaded                  |
-|------|---------------------------|-------------------------|------------------------------------|
-| L0   | `kb.yaml` → `description` | ≤ 300 characters        | Always, for every connected KB     |
-| L1   | `index.md`                | ≤ 4,000 tokens          | When a task touches the KB's scope |
-| L2   | `wiki/<page>.md`          | ≤ 2,000 tokens per page | When a page is relevant            |
-| L3   | `raw/…` or source URLs    | unbounded               | Only to verify or extend a page    |
-
-Consumers MUST be able to work from L0 alone and MUST NOT load L1+ of a KB
-just because it is connected. Producers SHOULD respect the budgets; a page
-that outgrows its budget SHOULD be split.
-
-The gist notes that a plain index works well up to roughly 100 sources. A KB
-whose `index.md` exceeds the L1 budget SHOULD either nest it (`index.md`
-links to per-category indexes such as `wiki/index-<category>.md`) or rely on a
-search tool (§9), and say which in `AGENTS.md`.
-
-## 4. Manifest — `kb.yaml`
+A KB is a directory with a `kb.yaml` file at its root. This file is the only
+fixed path in the spec.
 
 ```yaml
-openkb: "0.1"                 # spec version, REQUIRED
-id: awesome-can-bus           # REQUIRED, lowercase, [a-z0-9-], unique per publisher
+openkb: "0.1"                 # REQUIRED  spec version
+id: awesome-can-bus           # REQUIRED  [a-z0-9-], unique per publisher
 title: Awesome CAN bus        # REQUIRED
-description: >                # REQUIRED, L0 text, ≤ 300 chars
-  Tools, libraries and hardware for working with CAN bus...
-profile: awesome              # OPTIONAL, see §7 (default: wiki)
-version: 2026.10.31           # OPTIONAL, CalVer or SemVer
-license: CC-BY-4.0            # SHOULD, SPDX id for the wiki content
+description: >                # REQUIRED  L0 text, ≤ 300 chars
+  Curated tools and libraries for working with CAN bus...
+
+layout:                       # OPTIONAL  where things are; defaults shown
+  pages: wiki                 #   directory holding pages (searched recursively)
+  index: index.md             #   L1 entry point
+  sources: raw                #   raw sources, if kept in the KB
+  schema: AGENTS.md           #   instructions for the maintainer LLM
+  log: log.md                 #   activity log
+
+types: {}                     # OPTIONAL  custom page types, see §4.3
+profile: wiki                 # OPTIONAL  see §9
+version: 2026.10.31           # OPTIONAL
+license: CC-BY-4.0            # SHOULD    SPDX id for the content
 maintainers: [hexsecs]        # SHOULD
 tags: [can, automotive]       # OPTIONAL
-depends: []                   # OPTIONAL, other KB ids this one links into
+depends: []                   # OPTIONAL  ids of KBs this one links into
 ```
+
+All `layout` paths are relative to the KB root and MUST NOT point outside it.
+Consumers MUST use the declared paths and the defaults above for any that
+are missing. `layout.pages` MAY be `.` for a KB whose pages sit at the root.
+
+Fields not defined here are allowed and MUST be ignored by consumers that
+don't understand them. Tool-specific settings SHOULD go under an `x-<tool>`
+key.
 
 Schema: [`schemas/kb.schema.json`](schemas/kb.schema.json).
 
-## 5. Pages — `wiki/*.md`
+## 3. Context tiers
 
-Each page is Markdown with YAML frontmatter (compatible with Obsidian and
-Dataview):
+| Tier | Comes from               | Budget (guide)          | When it is loaded                  |
+|------|--------------------------|-------------------------|------------------------------------|
+| L0   | `description`            | ≤ 300 characters        | Always, for every connected KB     |
+| L1   | `layout.index`           | ≤ 4,000 tokens          | When a task touches the KB's scope |
+| L2   | a page                   | ≤ 2,000 tokens per page | When that page is relevant         |
+| L3   | `layout.sources` or URLs | unbounded               | Only to verify or extend a page    |
 
-```markdown
----
-id: python-can                # REQUIRED, equals the file name without .md
-title: python-can             # REQUIRED
-type: entity                  # REQUIRED, see below
-summary: Python library ...   # REQUIRED, ≤ 160 chars, reused verbatim in index.md
-tags: [library, python]       # OPTIONAL
-related: [cantools]           # OPTIONAL, page ids in this KB, or "<kb-id>:<page-id>"
-sources:                      # SHOULD, where the claims come from
-  - url: https://pypi.org/project/python-can/
-    retrieved: 2026-10-31
-updated: 2026-10-31           # REQUIRED, last substantive change
----
+Consumers MUST be able to work from L0 alone and MUST NOT load L1+ of a KB
+just because it is connected. Producers SHOULD respect the budgets.
 
-Body...
-```
+## 4. Pages
 
-### 5.1 Page types
+A **page** is any `.md` file under `layout.pages`, except:
 
-These are the page types the gist names, plus `answer` for filed-back queries:
+- the files declared as `layout.index`, `layout.schema` and `layout.log`,
+  and anything under `layout.sources`;
+- sub-indexes linked from the index that have no frontmatter;
+- files and directories whose name starts with `_` or `.`. Directories inside
+`layout.pages` are free-form: organize by type, topic, date or not at all.
 
-| `type`       | Purpose                                                            |
-|--------------|--------------------------------------------------------------------|
-| `overview`   | Top-level overview of the KB or a large area of it                 |
-| `source`     | Summary of one raw source; its `sources` cites that source         |
-| `entity`     | A concrete thing: a tool, person, organization, product, paper     |
-| `concept`    | An idea, technique or term                                         |
-| `comparison` | Side-by-side of several entities or concepts                       |
-| `synthesis`  | Conclusions drawn across many sources                              |
-| `answer`     | A query answer filed back into the wiki (§8)                       |
+### 4.1 Identity
 
-### 5.2 Links
+A page's **id** is its path relative to `layout.pages`, without `.md`, using
+`/` as the separator: `entities/python-can`, or just `python-can` in a flat
+layout. Ids are what links and other KBs use, so renaming or moving a page
+SHOULD leave a redirect (§4.4).
 
-- Within a KB, pages MAY use relative Markdown links (`[cantools](cantools.md)`)
-  or wikilinks (`[[cantools]]`); consumers MUST resolve both to `wiki/<id>.md`.
-  Markdown links render on GitHub; wikilinks suit Obsidian.
-- Links into another KB use `kb://<kb-id>/<page-id>`; consumers resolve them
-  only if that KB is connected.
-- Claims that no source backs SHOULD be marked, e.g. `(unverified)`.
-  Contradictions between sources SHOULD be stated on the page, not silently
-  resolved.
+### 4.2 Frontmatter
+
+Pages MUST have YAML frontmatter with these fields:
+
+| Field     | Rule                                                              |
+|-----------|-------------------------------------------------------------------|
+| `title`   | REQUIRED                                                          |
+| `summary` | REQUIRED, ≤ 160 chars, one sentence; what the index and search show |
+
+And SHOULD have:
+
+| Field     | Rule                                                              |
+|-----------|-------------------------------------------------------------------|
+| `type`    | A page type, see §4.3                                             |
+| `updated` | Date of last substantive change (`YYYY-MM-DD`)                    |
+| `sources` | List of `{url or path, retrieved}` backing the page's claims      |
+
+Any other fields (`tags`, `aliases`, `related`, Dataview fields, profile
+fields) are allowed and ignored by consumers that don't understand them.
 
 Schema: [`schemas/page.schema.json`](schemas/page.schema.json).
 
-## 6. Index and log
+### 4.3 Page types
 
-### `index.md`
-
-The L1 catalog, and the first thing the LLM reads when answering a query. It
-MUST list every page as `- [title](wiki/<id>.md) — <summary>`, grouped under
-category headings. It SHOULD be regenerated from page frontmatter on every
-ingest, so it never drifts from the pages.
-
-### `log.md`
-
-Append-only, chronological. Each entry starts with a heading in this exact
-form, so the log can be parsed with standard Unix tools:
-
-```markdown
-## [2026-10-31] ingest | python-can PyPI page
-Created wiki/python-can.md; updated wiki/socketcan.md, index.md.
-```
-
-The operation is one of `ingest`, `query` or `lint`.
-
-## 7. Profiles
-
-A profile adds conventions on top of the base format.
-
-### 7.1 `wiki` (default)
-
-The general pattern from the gist: any mix of the page types in §5.1.
-
-### 7.2 `awesome` — replacing awesome lists
-
-Each list entry is an `entity` page, plus optional `comparison` and `concept`
-pages. Entity pages in this profile add:
+`type` is free text, so a KB can use whatever types suit its domain. The
+**core types** in §8.2 have shared meanings, and a KB SHOULD use them where
+they fit. A KB that uses other types SHOULD declare them in `kb.yaml`, so
+consumers and other maintainers know what they mean:
 
 ```yaml
-url: https://github.com/...    # REQUIRED for entities
-category: Libraries            # REQUIRED for entities, used to group index.md
-license: MIT                   # OPTIONAL, SPDX id of the thing being listed
-status: active                 # active | maintenance | archived | unknown
-last_checked: 2026-10-31       # when url/status were last verified
+types:
+  decision: A choice that was made, with the alternatives and the reasoning.
+  recipe: Step-by-step instructions for one task.
 ```
 
-What this gives over a flat awesome list:
+### 4.4 Links
 
-- Each entry has an LLM-written summary, comparison links and sources, not
-  just one line.
-- Adding an entry is an *ingest*: a contributor submits a URL, the maintainer
-  LLM writes or updates the page, links it to related entries and regenerates
-  the index.
-- A *lint* pass rechecks `url`, `status` and `last_checked`, and flags dead or
-  archived entries.
-- `index.md` doubles as the classic awesome-list README, so nothing is lost
-  for human readers.
+Inside a KB, pages MAY use either style; consumers MUST resolve both:
 
-## 8. Operations
+- **Markdown links** with relative paths: `[cantools](cantools.md)`.
+- **Wikilinks**: `[[cantools]]`, `[[entities/cantools]]` or
+  `[[cantools|label]]`. A wikilink resolves to the page whose id matches; if
+  none does, to the only page with that file name; otherwise it is ambiguous
+  and lint SHOULD flag it.
 
-`AGENTS.md` tells the maintainer LLM how to run three operations. The names
-are standard so tools can call them, and every run appends to `log.md`.
+Links **to another KB** use `kb://<kb-id>/<page-id>`. Consumers resolve them
+only when that KB is connected, and otherwise show the link text.
 
-| Operation | Input                    | Effect |
-|-----------|--------------------------|--------|
-| `ingest`  | a source (file/URL/text) | Store it in `raw/` if it may be kept; write a `source` page; create or update every affected `entity`, `concept`, `comparison` and `synthesis` page (one source often touches 10–15); regenerate `index.md`. MAY run one source at a time with the human reviewing, or in batches. |
-| `query`   | a question               | Read `index.md`, then relevant pages, then sources if needed; answer with citations to pages. A useful answer SHOULD be filed back as an `answer` page, so explorations compound. |
-| `lint`    | —                        | Check schema conformance, contradictions between pages, stale claims, orphan pages, missing concept pages, missing cross-references, broken links, tier budgets and data gaps worth filling (for example by web search). |
+A moved page MAY leave a stub at its old path with `redirect: <new-id>` in its
+frontmatter and no body. Consumers MUST follow it.
 
-## 9. Tooling (non-normative)
+## 5. Index
 
-The format works with no tools beyond an LLM agent and a text editor. Useful
-additions, as suggested in the gist:
+`layout.index` is the L1 entry point and the first thing an agent reads after
+L0. It is Markdown, organized however the KB likes, but:
 
-- **Search** over the wiki once `index.md` alone isn't enough, for example
-  [qmd](https://github.com/tobi/qmd) (hybrid BM25/vector search, CLI and MCP)
-  or a small custom script.
-- **Obsidian** for reading (graph view shows hubs and orphans), Obsidian Web
-  Clipper for turning articles into Markdown sources, and Dataview for
-  querying frontmatter.
-- **git** for history and collaboration.
+- Every page MUST be reachable from it, either directly or through
+  sub-indexes it links to. Lint SHOULD report pages that aren't.
+- Each page link SHOULD be followed by that page's `summary`, so the index
+  works as a catalog without opening pages.
+- If the KB is too large for the L1 budget, the index SHOULD link to
+  sub-indexes (for example one per category) rather than list every page.
 
-## 10. Connecting KBs to a project
+The index MAY be written by hand, by the LLM, or generated from frontmatter.
 
-This is OpenKB's main addition to the pattern. A project lists its KBs in
-`.openkb/kbs.yaml`:
+## 6. Connecting KBs to a project
+
+A project lists its KBs in `.openkb/kbs.yaml`:
 
 ```yaml
 openkb: "0.1"
@@ -233,26 +183,153 @@ kbs:
     use: when the task involves CAN tooling  # OPTIONAL, hint shown with the L0 text
 ```
 
+The `id` MUST match the KB's own `kb.yaml` id. KB ids MUST be unique within a
+project.
+
 A tool (CLI, MCP server or agent hook) then:
 
 1. Fetches each KB into `.openkb/cache/<id>/` (gitignored), pinned in
    `.openkb/kbs.lock`.
 2. Writes `.openkb/context.md`: one block per KB with its L0 text, the `use`
-   hint, and the path to its `index.md`.
+   hint, and the resolved path of its index.
 3. The project's `AGENTS.md` / `CLAUDE.md` includes or links
-   `.openkb/context.md`, so the agent always sees L0 and knows how to go
-   deeper.
+   `.openkb/context.md`, so the agent always sees L0 for every KB and knows
+   how to go deeper.
 
 Connected KBs are read-only from the project's side. Knowledge gained while
-working on the project goes back to a KB as an `ingest` or a filed `answer`
-in that KB's own repository.
+working on the project goes back to a KB through that KB's own maintenance
+process, in its own repository.
 
-Projects MAY also connect a KB as a git submodule or plain directory; the
+Projects MAY connect a KB as a git submodule or plain directory instead; the
 cache is just the default.
 
 Schema: [`schemas/project.schema.json`](schemas/project.schema.json).
 
-## 11. Versioning
+---
+
+# Part II — Conventions
+
+Nothing in this part is required for compatibility.
+
+## 7. Default layout
+
+This layout follows the gist's three layers, and is what the `layout`
+defaults point to:
+
+```
+my-kb/
+├── kb.yaml          manifest
+├── AGENTS.md        schema: conventions and workflows for the maintainer LLM
+├── index.md         catalog of pages
+├── log.md           append-only activity log
+├── wiki/            LLM-maintained pages
+└── raw/             immutable sources; raw/assets/ for images
+```
+
+| Gist layer  | Default location | Notes                                               |
+|-------------|------------------|-----------------------------------------------------|
+| Raw sources | `raw/`           | The LLM reads but never modifies them. They MAY live outside the KB (cited by URL) when they can't be redistributed. |
+| Wiki        | `wiki/`, `index.md`, `log.md` | Written by the LLM, read by people.    |
+| Schema      | `AGENTS.md`      | `CLAUDE.md` works too. Co-evolved by human and LLM. |
+
+Inside `wiki/`, a flat directory is simplest. Larger KBs often use
+`wiki/entities/`, `wiki/concepts/` and so on; ids then include the folder.
+
+## 8. Maintenance
+
+### 8.1 Operations
+
+The gist defines three operations. A KB's schema file describes how it runs
+them, and SHOULD use these names so tools can trigger them:
+
+| Operation | Input                    | Typical effect |
+|-----------|--------------------------|----------------|
+| `ingest`  | a source (file/URL/text) | Keep it in sources if allowed; write a `source` page; update every affected page (one source often touches 10–15); update the index; log it. One at a time with the human reviewing, or in batches. |
+| `query`   | a question               | Read the index, then relevant pages, then sources if needed; answer with citations. File useful answers back as `answer` pages, so explorations compound. |
+| `lint`    | —                        | Check the contract (§2–§5), contradictions, stale claims, orphan and unreachable pages, missing concept pages, missing cross-references, broken links, budgets, and gaps worth filling. |
+
+### 8.2 Core page types
+
+From the gist, plus `answer`:
+
+| `type`       | Purpose                                                        |
+|--------------|----------------------------------------------------------------|
+| `overview`   | Overview of the KB or a large area of it                       |
+| `source`     | Summary of one raw source                                      |
+| `entity`     | A concrete thing: tool, person, organization, product, paper   |
+| `concept`    | An idea, technique or term                                     |
+| `comparison` | Side-by-side of several entities or concepts                   |
+| `synthesis`  | Conclusions drawn across many sources                          |
+| `answer`     | A query answer filed back into the KB                          |
+
+### 8.3 Log format
+
+The gist suggests a heading per entry, so the log can be parsed with standard
+Unix tools:
+
+```markdown
+## [2026-10-31] ingest | python-can PyPI page
+Created python-can; updated socketcan and the index.
+```
+
+### 8.4 Content
+
+- State contradictions between sources on the page instead of silently
+  picking one.
+- Mark claims no source backs, e.g. `(unverified)`.
+- Split pages that outgrow the L2 budget.
+
+### 8.5 Tooling
+
+The format needs nothing beyond an LLM agent and a text editor. The gist
+suggests:
+
+- **Search** once the index alone isn't enough, for example
+  [qmd](https://github.com/tobi/qmd) (hybrid BM25/vector search, CLI and MCP)
+  or a small custom script.
+- **Obsidian** for reading (graph view shows hubs and orphans), Obsidian Web
+  Clipper for turning articles into Markdown sources, and Dataview for
+  querying frontmatter.
+- **git** for history and collaboration.
+
+## 9. Profiles
+
+A profile is a named set of extra rules for a common kind of KB. A KB opts in
+with `profile:` in `kb.yaml`. Opting in makes the profile's rules binding for
+that KB, so tools can rely on them; the contract in Part I is unchanged.
+
+### 9.1 `wiki` (default)
+
+No extra rules.
+
+### 9.2 `awesome` — replacing awesome lists
+
+Each listed item is a page with `type: entity`, which MUST also have:
+
+```yaml
+url: https://github.com/...    # the thing being listed
+category: Libraries            # used to group the index
+```
+
+and SHOULD have:
+
+```yaml
+license: MIT                   # SPDX id of the thing being listed
+status: active                 # active | maintenance | archived | unknown
+last_checked: 2026-10-31       # when url and status were last verified
+```
+
+The index groups entities by `category`, one line each with the summary, so
+it still reads as a classic awesome list. What this adds over a flat list:
+
+- Each entry has an LLM-written summary, comparison links and sources.
+- Adding an entry is an `ingest`: a contributor submits a URL, the
+  maintainer LLM writes or updates the page, links it to related entries and
+  updates the index.
+- `lint` rechecks `url`, `status` and `last_checked`, and flags dead or
+  archived entries.
+
+## 10. Versioning
 
 This spec uses `openkb: "<major>.<minor>"`. Before 1.0, minor versions may
 break compatibility.

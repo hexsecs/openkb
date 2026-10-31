@@ -1,5 +1,4 @@
 ---
-id: socketcan
 title: SocketCAN
 summary: Linux kernel CAN stack that exposes CAN interfaces as network devices used through the socket API.
 type: concept
