@@ -50,6 +50,16 @@ def _sync(args: argparse.Namespace) -> int:
     return 0
 
 
+def _mcp(args: argparse.Namespace) -> int:
+    try:
+        from .server import build_server
+    except ImportError:
+        print("openshelf: the MCP server needs the 'mcp' extra: pip install 'openshelf[mcp]'", file=sys.stderr)
+        return 1
+    build_server(project.find_root(args.project)).run("stdio")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="openshelf", description="Tools for OpenShelf knowledge bases.")
     parser.add_argument("--version", action="version", version=f"openshelf {__version__}")
@@ -83,6 +93,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--locked", action="store_true", help="check out the commits in .openshelf/kbs.lock")
     p.add_argument("--project", default=".")
     p.set_defaults(func=_sync)
+
+    p = sub.add_parser("mcp", help="run an MCP server (stdio) exposing the connected KBs")
+    p.add_argument("--project", default=".")
+    p.set_defaults(func=_mcp)
 
     args = parser.parse_args(argv)
     try:

@@ -38,9 +38,30 @@ openshelf sync                                          # fetch KBs, write .open
 
 Point your project's `AGENTS.md` or `CLAUDE.md` at `.openshelf/context.md`. `openshelf sync --locked` reproduces the exact commits in the lock file.
 
+### MCP server
+
+`openshelf mcp` serves a project's connected KBs to any MCP client over stdio, one tier at a time:
+
+| Tool | Tier | What it returns |
+|---|---|---|
+| `list_kbs` | L0 | Every KB's id, title, one-line description and `use` hint |
+| `read_index(kb, subindex?)` | L1 | The KB's index (or a sub-index) and the pages it links to |
+| `read_page(kb, page)` | L2 | One page's frontmatter, body and resolved links, following redirects |
+| `read_source(kb, path)` | L3 | A raw source file, restricted to the KB's sources directory |
+| `search(query, kb?)` | — | Matching pages with their summaries |
+
+It is read-only and re-reads the files on every call, so edits show up without a restart. Links come back resolved, including `kb://` links into other KBs. Install it with the `mcp` extra and add it to Claude Code from your project directory:
+
+```sh
+pip install "openshelf[mcp] @ git+https://github.com/hexsecs/openshelf"
+claude mcp add --scope project openshelf -- openshelf mcp
+```
+
+Other clients take the same command, `openshelf mcp`, run from the project directory (or pass `--project <dir>`).
+
 ## Status
 
-Draft. Planned next: an MCP server that exposes connected KBs tier by tier, and `openshelf index` to generate an index from frontmatter.
+Draft. See the [roadmap](https://github.com/hexsecs/openshelf/issues/2) for what's next.
 
 ## License
 
