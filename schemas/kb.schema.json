@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hexsecs/openkb/schemas/kb.schema.json",
+  "title": "OpenKB manifest (kb.yaml)",
+  "type": "object",
+  "required": ["openkb", "id", "title", "description"],
+  "properties": {
+    "openkb": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "profile": { "enum": ["wiki", "awesome"], "default": "wiki" },
+    "version": { "type": "string" },
+    "license": { "type": "string" },
+    "maintainers": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "depends": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

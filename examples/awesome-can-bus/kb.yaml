@@ -1,0 +1,11 @@
+openkb: "0.1"
+id: awesome-can-bus
+title: Awesome CAN bus
+description: >
+  Curated tools and libraries for working with CAN bus: interfacing with
+  hardware, decoding DBC databases, and logging or replaying traffic.
+profile: awesome
+version: 2026.10.31
+license: CC-BY-4.0
+maintainers: [hexsecs]
+tags: [can, automotive, embedded]

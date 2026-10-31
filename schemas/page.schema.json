@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hexsecs/openkb/schemas/page.schema.json",
+  "title": "OpenKB page frontmatter",
+  "type": "object",
+  "required": ["id", "title", "summary", "updated"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "related": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^([a-z0-9-]+:)?[a-z0-9-]+$" }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string" },
+          "path": { "type": "string" },
+          "retrieved": { "type": "string", "format": "date" }
+        },
+        "anyOf": [{ "required": ["url"] }, { "required": ["path"] }]
+      }
+    },
+    "updated": { "type": "string", "format": "date" },
+    "kind": { "enum": ["entry", "topic"] },
+    "url": { "type": "string" },
+    "category": { "type": "string" },
+    "license": { "type": "string" },
+    "status": { "enum": ["active", "maintenance", "archived", "unknown"] },
+    "last_checked": { "type": "string", "format": "date" }
+  },
+  "if": { "properties": { "kind": { "const": "entry" } }, "required": ["kind"] },
+  "then": { "required": ["url", "category"] },
+  "additionalProperties": true
+}

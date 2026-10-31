@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hexsecs/openkb/schemas/project.schema.json",
+  "title": "OpenKB project connections (.openkb/kbs.yaml)",
+  "type": "object",
+  "required": ["openkb", "kbs"],
+  "properties": {
+    "openkb": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "kbs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "source"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+          "source": { "type": "string" },
+          "ref": { "type": "string" },
+          "path": { "type": "string", "default": "." },
+          "use": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
