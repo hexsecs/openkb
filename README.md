@@ -1,48 +1,50 @@
-# OpenKB
+# OpenShelf
 
 An open standard for the **LLM Wiki** pattern described by [Andrej Karpathy](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f): an LLM builds and maintains a persistent, interlinked Markdown wiki from your raw sources, so knowledge is compiled once and kept current instead of re-derived on every query.
 
-The gist leaves layout, page formats and tooling open, and OpenKB keeps it that way. It standardizes only what's needed to **connect** knowledge bases, and leaves everything else to the KB's owner:
+Think of each knowledge base as a book on a project's shelf. An agent sees every spine (a one-line description), opens the table of contents (the index) when a task touches that subject, reads only the pages it needs, and checks the references (raw sources) when it has to.
+
+The gist leaves layout, page formats and tooling open, and OpenShelf keeps it that way. It standardizes only what's needed to **connect** knowledge bases, and leaves everything else to the KB's owner:
 
 - **A small contract.** A `kb.yaml` manifest at the root declares the KB's description and where its pages, index and sources are. Pages need only a `title` and a one-line `summary`, and are identified by their path. Links can be Markdown or Obsidian wikilinks; links into other KBs use `kb://<kb>/<page>`.
 - **Free organization.** Folders, page types, naming and workflows are up to you. The spec offers conventions from the gist (default layout, page types, ingest/query/lint, log format) that you can adopt, adapt or ignore.
 - **Progressive context.** Every KB offers the same four tiers: a one-line description (L0), the index (L1), pages (L2) and raw sources (L3). Agents load only as deep as the task needs, so a project can connect many KBs cheaply.
-- **Connect many KBs to a project.** List them in `.openkb/kbs.yaml`; tooling turns that into a short `context.md` the project's agent always sees.
+- **Connect many KBs to a project.** List them in `.openshelf/kbs.yaml`; tooling turns that into a short `context.md` the project's agent always sees.
 - **Awesome lists, upgraded.** The opt-in `awesome` profile makes each list entry a sourced, cross-linked page that an LLM keeps current, while the index still reads as a classic awesome list.
 
 ## Contents
 
 - [`SPEC.md`](SPEC.md): the v0.1 draft spec
-- [`schemas/`](schemas/): JSON Schemas for `kb.yaml`, page frontmatter and `.openkb/kbs.yaml`
-- [`src/openkb/`](src/openkb/): the `openkb` command-line tool
+- [`schemas/`](schemas/): JSON Schemas for `kb.yaml`, page frontmatter and `.openshelf/kbs.yaml`
+- [`src/openshelf/`](src/openshelf/): the `openshelf` command-line tool
 - [`examples/awesome-can-bus/`](examples/awesome-can-bus/): a small awesome-profile KB using the default layout
-- [`examples/openkb-design/`](examples/openkb-design/): a KB with its own layout (nested folders, wikilinks, a custom page type)
+- [`examples/openshelf-design/`](examples/openshelf-design/): a KB with its own layout (nested folders, wikilinks, a custom page type)
 - [`examples/project/`](examples/project/): a project that connects both
 
 ## Tooling
 
-The `openkb` command (Python 3.10+) works with any KB that meets the spec:
+The `openshelf` command (Python 3.10+) works with any KB that meets the spec:
 
 ```sh
-pip install git+https://github.com/hexsecs/openkb
+pip install git+https://github.com/hexsecs/openshelf
 
-openkb init my-kb --description "One line saying what this KB covers."   # new KB, default layout, CC-BY-4.0
-openkb lint my-kb                                    # check it against the spec
+openshelf init my-kb --description "One line saying what this KB covers."   # new KB, default layout, CC-BY-4.0
+openshelf lint my-kb                                    # check it against the spec
 
 cd my-project
-openkb add github:someone/some-kb --use "when the task involves X"        # connect a KB
-openkb sync                                          # fetch KBs, write .openkb/kbs.lock and .openkb/context.md
+openshelf add github:someone/some-kb --use "when the task involves X"        # connect a KB
+openshelf sync                                          # fetch KBs, write .openshelf/kbs.lock and .openshelf/context.md
 ```
 
-Point your project's `AGENTS.md` or `CLAUDE.md` at `.openkb/context.md`. `openkb sync --locked` reproduces the exact commits in the lock file.
+Point your project's `AGENTS.md` or `CLAUDE.md` at `.openshelf/context.md`. `openshelf sync --locked` reproduces the exact commits in the lock file.
 
 ## Status
 
-Draft. Planned next: an MCP server that exposes connected KBs tier by tier, and `openkb index` to generate an index from frontmatter.
+Draft. Planned next: an MCP server that exposes connected KBs tier by tier, and `openshelf index` to generate an index from frontmatter.
 
 ## License
 
 - **Code** (`src/`, `tests/`, `schemas/`, CI): [MIT](LICENSE).
 - **Specification and examples** (`SPEC.md`, `examples/`): [CC-BY-4.0](LICENSE-SPEC).
 
-Knowledge bases you create are yours to license. `openkb init` defaults to CC-BY-4.0, which you can change with `--license`.
+Knowledge bases you create are yours to license. `openshelf init` defaults to CC-BY-4.0, which you can change with `--license`.

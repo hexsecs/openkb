@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/hexsecs/openkb/schemas/project.schema.json",
-  "title": "OpenKB project connections (.openkb/kbs.yaml)",
+  "$id": "https://github.com/hexsecs/openshelf/schemas/project.schema.json",
+  "title": "OpenShelf project connections (.openshelf/kbs.yaml)",
   "type": "object",
-  "required": ["openkb", "kbs"],
+  "required": ["openshelf", "kbs"],
   "properties": {
-    "openkb": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "openshelf": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
     "kbs": {
       "type": "array",
       "items": {

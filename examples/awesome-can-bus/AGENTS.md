@@ -1,6 +1,6 @@
 # Schema for this KB
 
-This is an OpenKB knowledge base using the `awesome` profile (see OpenKB `SPEC.md` v0.1). It follows the LLM Wiki pattern: `raw/` holds immutable sources, `wiki/` is maintained by you, and this file holds the conventions. The human and the LLM refine this file together over time.
+This is an OpenShelf knowledge base using the `awesome` profile (see OpenShelf `SPEC.md` v0.1). It follows the LLM Wiki pattern: `raw/` holds immutable sources, `wiki/` is maintained by you, and this file holds the conventions. The human and the LLM refine this file together over time.
 
 ## Conventions
 - Every listed tool, library or product is a `type: entity` page with `url`, `category`, `status` and `last_checked`.
@@ -20,4 +20,4 @@ This is an OpenKB knowledge base using the `awesome` profile (see OpenKB `SPEC.m
 Read `index.md`, then the relevant pages. Answer with links to pages. If the answer would be useful again, file it as a `type: answer` page and log it.
 
 ## lint
-Check frontmatter against the OpenKB schemas, broken links, orphan pages, contradictions between pages, entities whose `last_checked` is older than 90 days, dead or archived URLs, and pages over 2,000 tokens. Report, fix, and log.
+Check frontmatter against the OpenShelf schemas, broken links, orphan pages, contradictions between pages, entities whose `last_checked` is older than 90 days, dead or archived URLs, and pages over 2,000 tokens. Report, fix, and log.

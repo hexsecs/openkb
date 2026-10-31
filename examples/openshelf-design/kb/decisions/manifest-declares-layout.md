@@ -14,4 +14,4 @@ updated: 2026-10-31
 
 **Choice.** Option 2. `kb.yaml` is the only fixed path. Page ids come from paths under `layout.pages`, and links can be Markdown or wikilinks.
 
-**Consequences.** Existing wikis, including Obsidian vaults, can become OpenKB KBs by adding a manifest and summaries. Tools must read the manifest before anything else. This KB is itself organized differently from the default to show it works ([[progressive-context]] explains why the tiers still line up).
+**Consequences.** Existing wikis, including Obsidian vaults, can become OpenShelf KBs by adding a manifest and summaries. Tools must read the manifest before anything else. This KB is itself organized differently from the default to show it works ([[progressive-context]] explains why the tiers still line up).

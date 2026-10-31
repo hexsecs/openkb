@@ -12,7 +12,7 @@ from .kb import MANIFEST
 AGENTS_TEMPLATE = """\
 # Schema for this KB
 
-This is an OpenKB knowledge base (spec {spec}). It follows the LLM Wiki pattern: `raw/` holds immutable sources, `wiki/` is maintained by the LLM, and this file holds the conventions. Refine it as the KB grows.
+This is an OpenShelf knowledge base (spec {spec}). It follows the LLM Wiki pattern: `raw/` holds immutable sources, `wiki/` is maintained by the LLM, and this file holds the conventions. Refine it as the KB grows.
 
 ## Conventions
 - Every page has frontmatter with `title`, a one-sentence `summary` (≤ 160 chars), `type` and `updated`.
@@ -27,7 +27,7 @@ Save the source in `raw/` if it may be kept, write a `source` page, update every
 Read `index.md`, then the relevant pages. Answer with links to pages. File useful answers as `answer` pages and log them.
 
 ## lint
-Run `openkb lint`, then look for contradictions, stale claims, missing pages and missing cross-references. Fix and log.
+Run `openshelf lint`, then look for contradictions, stale claims, missing pages and missing cross-references. Fix and log.
 """
 
 
@@ -39,7 +39,7 @@ def init(root: str | Path, *, id: str, title: str, description: str, license: st
     (root / "wiki").mkdir(exist_ok=True)
     (root / "raw").mkdir(exist_ok=True)
     (root / "raw" / ".gitkeep").touch()
-    manifest = {"openkb": SPEC_VERSION, "id": id, "title": title, "description": description, "license": license, "maintainers": []}
+    manifest = {"openshelf": SPEC_VERSION, "id": id, "title": title, "description": description, "license": license, "maintainers": []}
     (root / MANIFEST).write_text(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True), encoding="utf-8")
     for name, text in {
         "AGENTS.md": AGENTS_TEMPLATE.format(spec=SPEC_VERSION),

@@ -5,15 +5,15 @@ import pytest
 import yaml
 
 from conftest import EXAMPLES, git
-from openkb import project
-from openkb.cli import main
+from openshelf import project
+from openshelf.cli import main
 
 
 def test_example_context_is_up_to_date(examples):
     project.sync(examples / "project")
     for name in ("context.md", "kbs.lock"):
-        generated = (examples / "project/.openkb" / name).read_text()
-        assert generated == (EXAMPLES / "project/.openkb" / name).read_text(), f"run `openkb sync --project examples/project` ({name})"
+        generated = (examples / "project/.openshelf" / name).read_text()
+        assert generated == (EXAMPLES / "project/.openshelf" / name).read_text(), f"run `openshelf sync --project examples/project` ({name})"
 
 
 @pytest.fixture
@@ -32,35 +32,35 @@ def test_add_and_sync_git(tmp_path, remote):
     proj.mkdir()
     assert main(["add", remote.as_uri(), "--project", str(proj), "--use", "for CAN work"]) == 0
 
-    data = yaml.safe_load((proj / ".openkb/kbs.yaml").read_text())
+    data = yaml.safe_load((proj / ".openshelf/kbs.yaml").read_text())
     assert data["kbs"] == [{"id": "awesome-can-bus", "source": remote.as_uri(), "use": "for CAN work"}]
-    lock = yaml.safe_load((proj / ".openkb/kbs.lock").read_text())
+    lock = yaml.safe_load((proj / ".openshelf/kbs.lock").read_text())
     first = lock["kbs"]["awesome-can-bus"]["commit"]
     assert first == git("rev-parse", "HEAD", cwd=remote)
-    context = (proj / ".openkb/context.md").read_text()
-    assert "- Index: .openkb/cache/awesome-can-bus/index.md" in context
+    context = (proj / ".openshelf/context.md").read_text()
+    assert "- Index: .openshelf/cache/awesome-can-bus/index.md" in context
     assert "- Use: for CAN work" in context
-    assert (proj / ".openkb/.gitignore").read_text() == "cache/\n"
-    assert not any(p.name.startswith(".tmp-") for p in (proj / ".openkb/cache").iterdir())
+    assert (proj / ".openshelf/.gitignore").read_text() == "cache/\n"
+    assert not any(p.name.startswith(".tmp-") for p in (proj / ".openshelf/cache").iterdir())
 
     # A new upstream commit is picked up by sync, but not by sync --locked.
     (remote / "log.md").write_text((remote / "log.md").read_text() + "\nmore\n")
     git("commit", "-qam", "more", cwd=remote)
     project.sync(proj)
-    second = yaml.safe_load((proj / ".openkb/kbs.lock").read_text())["kbs"]["awesome-can-bus"]["commit"]
+    second = yaml.safe_load((proj / ".openshelf/kbs.lock").read_text())["kbs"]["awesome-can-bus"]["commit"]
     assert second != first
-    (proj / ".openkb/kbs.lock").write_text(yaml.safe_dump({"openkb": "0.1", "kbs": {"awesome-can-bus": {"commit": first}}}))
+    (proj / ".openshelf/kbs.lock").write_text(yaml.safe_dump({"openshelf": "0.1", "kbs": {"awesome-can-bus": {"commit": first}}}))
     project.sync(proj, locked=True)
-    assert git("rev-parse", "HEAD", cwd=proj / ".openkb/cache/awesome-can-bus") == first
+    assert git("rev-parse", "HEAD", cwd=proj / ".openshelf/cache/awesome-can-bus") == first
 
 
 def test_add_local_reads_id(tmp_path, examples):
     proj = examples / "fresh"
     proj.mkdir()
-    entry = project.add(proj, "../openkb-design")
-    assert entry == {"id": "openkb-design", "source": "../openkb-design"}
+    entry = project.add(proj, "../openshelf-design")
+    assert entry == {"id": "openshelf-design", "source": "../openshelf-design"}
     with pytest.raises(project.ProjectError, match="already connected"):
-        project.add(proj, "../openkb-design")
+        project.add(proj, "../openshelf-design")
 
 
 def test_id_mismatch(tmp_path, remote):

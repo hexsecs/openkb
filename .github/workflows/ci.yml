@@ -19,4 +19,4 @@ jobs:
       - run: pip install -e '.[test]'
       - run: pytest -q
       - name: Lint example KBs
-        run: openkb lint examples/awesome-can-bus examples/openkb-design
+        run: openshelf lint examples/awesome-can-bus examples/openshelf-design

@@ -1,4 +1,4 @@
-"""Load an OpenKB knowledge base: manifest, layout, pages and link resolution."""
+"""Load an OpenShelf knowledge base: manifest, layout, pages and link resolution."""
 
 from __future__ import annotations
 

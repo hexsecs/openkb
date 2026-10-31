@@ -5,7 +5,7 @@ summary: Load knowledge in tiers, from a one-line description down to raw source
 updated: 2026-10-31
 ---
 
-An agent connected to many KBs can't read all of them. OpenKB gives every KB the same four tiers:
+An agent connected to many KBs can't read all of them. OpenShelf gives every KB the same four tiers:
 
 1. **L0:** the one-line `description` from `kb.yaml`, always in context.
 2. **L1:** the index, read when a task touches the KB's area.

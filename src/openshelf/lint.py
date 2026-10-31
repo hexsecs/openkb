@@ -1,4 +1,4 @@
-"""Check a KB against the OpenKB contract (errors) and conventions (warnings)."""
+"""Check a KB against the OpenShelf contract (errors) and conventions (warnings)."""
 
 from __future__ import annotations
 

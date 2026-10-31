@@ -12,4 +12,4 @@ Described by Andrej Karpathy as an alternative to retrieving from raw documents 
 
 There are three layers: immutable raw sources, the LLM-written wiki, and a schema file (such as `AGENTS.md` or `CLAUDE.md`) that the human and LLM refine together. The operations are ingest, query and lint, supported by an `index.md` catalog and an append-only `log.md`.
 
-The gist leaves layout and formats open, which is what [[decisions/manifest-declares-layout]] preserves. OpenKB adds [[progressive-context]] so that many such wikis can be connected to one project.
+The gist leaves layout and formats open, which is what [[decisions/manifest-declares-layout]] preserves. OpenShelf adds [[progressive-context]] so that many such wikis can be connected to one project.

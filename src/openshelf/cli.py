@@ -1,4 +1,4 @@
-"""The `openkb` command."""
+"""The `openshelf` command."""
 
 from __future__ import annotations
 
@@ -51,8 +51,8 @@ def _sync(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="openkb", description="Tools for OpenKB knowledge bases.")
-    parser.add_argument("--version", action="version", version=f"openkb {__version__}")
+    parser = argparse.ArgumentParser(prog="openshelf", description="Tools for OpenShelf knowledge bases.")
+    parser.add_argument("--version", action="version", version=f"openshelf {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("init", help="create a new KB with the default layout")
@@ -75,12 +75,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--path", help="subdirectory of the source that holds kb.yaml")
     p.add_argument("--use", help="when an agent should consult this KB")
     p.add_argument("--no-sync", action="store_true", help="don't run sync afterwards")
-    p.add_argument("--project", default=".", help="project directory (default: nearest with .openkb/kbs.yaml)")
+    p.add_argument("--project", default=".", help="project directory (default: nearest with .openshelf/kbs.yaml)")
     p.set_defaults(func=_add)
 
-    p = sub.add_parser("sync", help="fetch connected KBs and regenerate .openkb/context.md")
+    p = sub.add_parser("sync", help="fetch connected KBs and regenerate .openshelf/context.md")
     p.add_argument("--offline", action="store_true", help="use the cache only")
-    p.add_argument("--locked", action="store_true", help="check out the commits in .openkb/kbs.lock")
+    p.add_argument("--locked", action="store_true", help="check out the commits in .openshelf/kbs.lock")
     p.add_argument("--project", default=".")
     p.set_defaults(func=_sync)
 
@@ -88,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         return args.func(args)
     except (project.ProjectError, FileExistsError) as e:
-        print(f"openkb: {e}", file=sys.stderr)
+        print(f"openshelf: {e}", file=sys.stderr)
         return 1
 
 

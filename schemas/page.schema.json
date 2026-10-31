@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/hexsecs/openkb/schemas/page.schema.json",
-  "title": "OpenKB page frontmatter",
+  "$id": "https://github.com/hexsecs/openshelf/schemas/page.schema.json",
+  "title": "OpenShelf page frontmatter",
   "description": "A page's id is its path under layout.pages without .md, so it is not a frontmatter field. Profile rules (such as awesome entities needing url and category) depend on kb.yaml and are checked by lint, not by this schema.",
   "type": "object",
   "oneOf": [

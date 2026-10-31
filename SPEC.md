@@ -1,13 +1,13 @@
-# OpenKB Specification — v0.1 (draft)
+# OpenShelf Specification — v0.1 (draft)
 
-OpenKB standardizes the **LLM Wiki** pattern described by Andrej Karpathy
+OpenShelf standardizes the **LLM Wiki** pattern described by Andrej Karpathy
 ([gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)).
 In that pattern, an LLM incrementally builds and maintains a persistent,
 interlinked set of Markdown pages between you and your raw sources, instead of
 re-deriving everything from the sources at query time.
 
 The gist is deliberately abstract, and people organize their wikis in very
-different ways. OpenKB keeps that freedom. It standardizes only what another
+different ways. OpenShelf keeps that freedom. It standardizes only what another
 tool or project needs in order to **connect** to a KB:
 
 - **The contract (§2–§6)** is small and strict. It says where things are, how
@@ -43,7 +43,7 @@ A KB is a directory with a `kb.yaml` file at its root. This file is the only
 fixed path in the spec.
 
 ```yaml
-openkb: "0.1"                 # REQUIRED  spec version
+openshelf: "0.1"                 # REQUIRED  spec version
 id: awesome-can-bus           # REQUIRED  [a-z0-9-], unique per publisher
 title: Awesome CAN bus        # REQUIRED
 description: >                # REQUIRED  L0 text, ≤ 300 chars
@@ -65,7 +65,7 @@ tags: [can, automotive]       # OPTIONAL
 depends: []                   # OPTIONAL  ids of KBs this one links into
 ```
 
-If `license` is absent, consumers MUST NOT assume one. `openkb init` uses
+If `license` is absent, consumers MUST NOT assume one. `openshelf init` uses
 CC-BY-4.0 unless told otherwise.
 
 All `layout` paths are relative to the KB root and MUST NOT point outside it.
@@ -175,10 +175,10 @@ The index MAY be written by hand, by the LLM, or generated from frontmatter.
 
 ## 6. Connecting KBs to a project
 
-A project lists its KBs in `.openkb/kbs.yaml`:
+A project lists its KBs in `.openshelf/kbs.yaml`:
 
 ```yaml
-openkb: "0.1"
+openshelf: "0.1"
 kbs:
   - id: awesome-can-bus
     source: github:hexsecs/awesome-can-bus   # github:owner/repo, git URL, or local path
@@ -192,12 +192,12 @@ project.
 
 A tool (CLI, MCP server or agent hook) then:
 
-1. Fetches each KB into `.openkb/cache/<id>/` (gitignored), pinned in
-   `.openkb/kbs.lock`.
-2. Writes `.openkb/context.md`: one block per KB with its L0 text, the `use`
+1. Fetches each KB into `.openshelf/cache/<id>/` (gitignored), pinned in
+   `.openshelf/kbs.lock`.
+2. Writes `.openshelf/context.md`: one block per KB with its L0 text, the `use`
    hint, and the resolved path of its index.
 3. The project's `AGENTS.md` / `CLAUDE.md` includes or links
-   `.openkb/context.md`, so the agent always sees L0 for every KB and knows
+   `.openshelf/context.md`, so the agent always sees L0 for every KB and knows
    how to go deeper.
 
 Connected KBs are read-only from the project's side. Knowledge gained while
@@ -335,5 +335,5 @@ it still reads as a classic awesome list. What this adds over a flat list:
 
 ## 10. Versioning
 
-This spec uses `openkb: "<major>.<minor>"`. Before 1.0, minor versions may
+This spec uses `openshelf: "<major>.<minor>"`. Before 1.0, minor versions may
 break compatibility.

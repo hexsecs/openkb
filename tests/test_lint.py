@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 
 from conftest import EXAMPLES, page, write
-from openkb.init import init
-from openkb.lint import lint
+from openshelf.init import init
+from openshelf.lint import lint
 
 
 def errors(root: Path) -> list[str]:
@@ -15,7 +15,7 @@ def warnings(root: Path) -> list[str]:
     return [f"{i.where}: {i.message}" for i in lint(root) if i.level == "warning"]
 
 
-@pytest.mark.parametrize("name", ["awesome-can-bus", "openkb-design"])
+@pytest.mark.parametrize("name", ["awesome-can-bus", "openshelf-design"])
 def test_examples_are_clean(name):
     assert lint(EXAMPLES / name) == []
 
@@ -98,7 +98,7 @@ def test_redirects(kb):
 
 def test_declared_files_and_sources_are_not_pages(tmp_path):
     root = tmp_path / "kb"
-    write(root / "kb.yaml", "openkb: '0.1'\nid: t\ntitle: T\ndescription: D.\nlicense: CC-BY-4.0\nmaintainers: []\n"
+    write(root / "kb.yaml", "openshelf: '0.1'\nid: t\ntitle: T\ndescription: D.\nlicense: CC-BY-4.0\nmaintainers: []\n"
           "layout: {pages: ., index: README.md, schema: CLAUDE.md, log: notes/CHANGELOG.md, sources: notes/src}\n")
     write(root / "README.md", "- [[p]] — A page.\n")
     write(root / "CLAUDE.md", "# rules\n")
@@ -134,7 +134,7 @@ def test_awesome_profile(kb):
 
 def test_manifest_errors(tmp_path):
     assert errors(tmp_path) == [f"{tmp_path}: {tmp_path.resolve()}: no kb.yaml"]
-    write(tmp_path / "kb.yaml", "openkb: '0.1'\nid: Bad_Id\ntitle: T\ndescription: D\nlayout: {pages: ../x}\n")
+    write(tmp_path / "kb.yaml", "openshelf: '0.1'\nid: Bad_Id\ntitle: T\ndescription: D\nlayout: {pages: ../x}\n")
     errs = errors(tmp_path)
     assert any(e.startswith("kb.yaml: id:") for e in errs)
     assert any(e.startswith("kb.yaml: layout/pages:") for e in errs)
