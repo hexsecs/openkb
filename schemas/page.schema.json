@@ -13,6 +13,8 @@
     "summary": { "type": "string", "minLength": 1, "maxLength": 160 },
     "type": { "type": "string", "minLength": 1 },
     "updated": { "type": "string", "format": "date" },
+    "created": { "type": "string", "format": "date" },
+    "depth": { "enum": ["stub", "brief", "full", "deep"] },
     "sources": {
       "type": "array",
       "items": {

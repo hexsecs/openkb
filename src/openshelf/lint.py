@@ -13,7 +13,11 @@ from .kb import KB, KBError
 
 CORE_TYPES = {"overview", "source", "entity", "concept", "comparison", "synthesis", "answer"}
 INDEX_TOKEN_BUDGET = 4000
-PAGE_TOKEN_BUDGET = 2000
+# L2 budgets are depth-aware (SPEC §4.5): a page's `depth` frontmatter field
+# selects its budget. Pages without a depth field use the full budget, which
+# is also the default L2 budget.
+PAGE_TOKEN_BUDGET = 2500
+DEPTH_TOKEN_BUDGETS = {"stub": 750, "brief": 750, "full": 2500, "deep": 6000}
 
 
 @dataclass
@@ -130,8 +134,11 @@ def lint(root: str | Path) -> list[Issue]:
         ptype = meta.get("type")
         if isinstance(ptype, str) and ptype not in CORE_TYPES and ptype not in declared:
             warn(where, f"type '{ptype}' is not a core type and is not declared in kb.yaml types")
-        if estimate_tokens(page.body) > PAGE_TOKEN_BUDGET:
-            warn(where, f"page is ~{estimate_tokens(page.body)} tokens, over the L2 budget of {PAGE_TOKEN_BUDGET}; consider splitting")
+        depth = meta.get("depth")
+        budget = DEPTH_TOKEN_BUDGETS.get(depth, PAGE_TOKEN_BUDGET) if isinstance(depth, str) else PAGE_TOKEN_BUDGET
+        if estimate_tokens(page.body) > budget:
+            label = f"L2 budget for depth '{depth}'" if isinstance(depth, str) and depth in DEPTH_TOKEN_BUDGETS else "L2 budget"
+            warn(where, f"page is ~{estimate_tokens(page.body)} tokens, over the {label} of {budget}; consider splitting")
         if kb.profile == "awesome" and ptype == "entity":
             for field in ("url", "category"):
                 if field not in meta:
