@@ -386,11 +386,18 @@ and SHOULD have:
 
 ```yaml
 license: MIT                   # SPDX id of the thing being listed
-status: active                 # active | maintenance | archived | unknown
+status: active                 # active | maintenance | archived | published | unknown
 last_checked: 2026-10-31       # when url and status were last verified
 created: 2026-10-31            # when the entry first entered the KB (set by ingest, then preserved)
 depth: full                    # how far the entry has been deepened (§4.5)
 ```
+
+`status` describes the listed thing's maintenance state. For a finished
+work — a publication such as a paper, talk, or book — the status is
+`published`: the work is complete, it has no maintenance state to track,
+and `published` says so as a fact rather than leaving the field at the
+unverified default. `unknown` is reserved for living resources (projects,
+tools, services) whose current state has not been verified.
 
 The index groups entities by `category`, one line each with the summary, so
 it still reads as a classic awesome list. What this adds over a flat list:

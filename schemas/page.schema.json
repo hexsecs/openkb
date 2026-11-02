@@ -31,7 +31,7 @@
     "url": { "type": "string" },
     "category": { "type": "string" },
     "license": { "type": "string" },
-    "status": { "enum": ["active", "maintenance", "archived", "unknown"] },
+    "status": { "enum": ["active", "maintenance", "archived", "published", "unknown"] },
     "last_checked": { "type": "string", "format": "date" }
   },
   "additionalProperties": true
