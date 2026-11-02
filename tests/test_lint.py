@@ -141,5 +141,27 @@ def test_manifest_errors(tmp_path):
 
 
 def test_budgets(kb):
-    write(kb / "wiki/b.md", page("B", body="word " * 2000))
+    write(kb / "wiki/b.md", page("B", body="word " * 2400))
     assert any("over the L2 budget" in w for w in warnings(kb))
+
+
+def test_depth_budgets(kb):
+    # ~1,000 tokens of body: over the brief budget, inside full and deep.
+    body = "word " * 800
+    write(kb / "wiki/b.md", page("B", body=body, depth="brief"))
+    assert any("over the L2 budget for depth 'brief'" in w for w in warnings(kb))
+    write(kb / "wiki/b.md", page("B", body=body, depth="full"))
+    assert not any("over the L2 budget" in w for w in warnings(kb))
+    write(kb / "wiki/b.md", page("B", body=body, depth="deep"))
+    assert not any("over the L2 budget" in w for w in warnings(kb))
+    # ~2,750 tokens of body: over full, inside deep.
+    body = "word " * 2200
+    write(kb / "wiki/b.md", page("B", body=body, depth="full"))
+    assert any("over the L2 budget for depth 'full'" in w for w in warnings(kb))
+    write(kb / "wiki/b.md", page("B", body=body, depth="deep"))
+    assert not any("over the L2 budget" in w for w in warnings(kb))
+
+
+def test_invalid_depth_is_a_schema_error(kb):
+    write(kb / "wiki/b.md", page("B", depth="huge"))
+    assert any("depth" in e for e in errors(kb))

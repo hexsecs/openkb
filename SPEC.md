@@ -84,7 +84,7 @@ Schema: [`schemas/kb.schema.json`](schemas/kb.schema.json).
 |------|--------------------------|-------------------------|------------------------------------|
 | L0   | `description`            | ≤ 300 characters        | Always, for every connected KB     |
 | L1   | `layout.index`           | ≤ 4,000 tokens          | When a task touches the KB's scope |
-| L2   | a page                   | ≤ 2,000 tokens per page | When that page is relevant         |
+| L2   | a page                   | ≤ 2,500 tokens per page (by `depth`, §4.5) | When that page is relevant         |
 | L3   | `layout.sources` or URLs | unbounded               | Only to verify or extend a page    |
 
 Consumers MUST be able to work from L0 alone and MUST NOT load L1+ of a KB
@@ -122,7 +122,9 @@ And SHOULD have:
 | Field     | Rule                                                              |
 |-----------|-------------------------------------------------------------------|
 | `type`    | A page type, see §4.3                                             |
+| `created` | Date the page first entered the KB (`YYYY-MM-DD`); set once, never changes |
 | `updated` | Date of last substantive change (`YYYY-MM-DD`)                    |
+| `depth`   | How much authored depth the page carries, see §4.5                |
 | `sources` | List of `{url or path, retrieved}` backing the page's claims      |
 
 Any other fields (`tags`, `aliases`, `related`, Dataview fields, profile
@@ -158,6 +160,71 @@ only when that KB is connected, and otherwise show the link text.
 
 A moved page MAY leave a stub at its old path with `redirect: <new-id>` in its
 frontmatter and no body. Consumers MUST follow it.
+
+### 4.5 Page depth
+
+A page MAY carry a `depth` field saying how much authored depth it has.
+Depth is the L2 sizing ladder: it tells consumers how much context a page
+will cost before they load it, and it gives maintainers a shared language
+for how far a page has been taken. There are four depths:
+
+| Depth   | Budget (guide)   | What it is |
+|---------|------------------|------------|
+| `stub`  | ≤ 750 tokens     | Machine-generated placeholder: title, summary, link, provenance. No authored content. |
+| `brief` | ≤ 750 tokens     | The shortest authored page: a verified orientation — what it is, who it is for, key caveats, checked links. |
+| `full`  | ≤ 2,500 tokens   | The standard researched page: what it is, how it works, where it fits, limits, status and sources. |
+| `deep`  | ≤ 6,000 tokens   | A rare, selective research-grade treatment of a landmark topic, assigned deliberately — never the default. |
+
+The design choices behind the four:
+
+- **`stub` reserves the address.** Ingest generates a stub for every known
+  item, so every link target exists and is reachable from the index from
+  day one. A stub is not a reading tier; its size is bounded by its
+  template, and lint applies the `brief` ceiling as a sanity cap — a stub
+  that has grown authored content is misclassified and should be promoted,
+  not left to swell.
+- **`brief` is sized to one retrieval chunk.** Retrieval practice puts a
+  coherent, self-contained chunk at roughly 400–800 tokens, so a 750-token
+  brief page is retrievable and loadable whole. It exists for pointer-type
+  entries (a book, a dataset, a conference) where a full treatment would
+  be padding — the page earns its place by being *verified*, not long.
+  Brief is not the summary layer: the `summary` field (≤ 160 chars) stays
+  the one-line orientation in indexes and search results.
+- **`full` is anchored to a complete single-topic article.** At ~1,900
+  words it sits near the 90th percentile of Wikipedia articles — enough
+  for mechanism, evidence and limits without splitting the topic. The
+  budget rose from the original flat L2 budget of 2,000 tokens because
+  real researched pages kept hitting that ceiling and losing load-bearing
+  detail to budget-trimming. Full pages are slightly heavy for bulk agent
+  loading (distilled context is usually 1,000–2,000 tokens), so consumers
+  should load them one at a time, or by section — the ladder assumes
+  section-level retrieval exists for L2.
+- **`deep` is an overview ceiling, not a monograph.** At ~4,500 words it
+  is large enough to hold a landmark topic's apparatus — the primary
+  numbers, the design trade-offs, the contested points — that a `full`
+  page demonstrably loses. It is also too large for routine loading:
+  6,000 tokens would consume most of a typical always-on context budget,
+  so consumers MUST NOT load `deep` pages wholesale by default; they are
+  on-demand, read through a table of contents or by section. A topic that
+  outgrows `deep` splits, Wikipedia-style, into a `deep` overview plus
+  linked `full` and `brief` children rather than growing one page
+  further.
+- **Promotion is editorial, not volumetric.** A page moves stub → brief →
+  full → deep when the topic earns it — centrality, citations from other
+  pages, a maintainer's judgment that the substance is being lost — not
+  merely because text accumulated. Most pages should never be `deep`;
+  if everything is deep, the ladder carries no signal.
+- **Absent `depth`, the `full` budget applies.** Depth is optional; a KB
+  that never uses it sees one change, the default L2 budget of 2,500
+  tokens. Any other `depth` value is a schema error.
+
+Dates in frontmatter are deliberately three distinct facts: `created`
+(when the page first entered the KB; set once, never changes), `updated`
+(when its content last substantively changed) and — in the `awesome`
+profile — `last_checked` (when the listed thing's `url` and `status` were
+last verified). A page can be old, recently edited and stale-checked, or
+any other combination; conflating the three hides exactly the freshness
+signal each is meant to carry.
 
 ## 5. Index
 
@@ -321,6 +388,8 @@ and SHOULD have:
 license: MIT                   # SPDX id of the thing being listed
 status: active                 # active | maintenance | archived | unknown
 last_checked: 2026-10-31       # when url and status were last verified
+created: 2026-10-31            # when the entry first entered the KB (set by ingest, then preserved)
+depth: full                    # how far the entry has been deepened (§4.5)
 ```
 
 The index groups entities by `category`, one line each with the summary, so
